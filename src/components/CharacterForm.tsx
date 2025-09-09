@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
+import emailjs from '@emailjs/browser';
 
 const gen5Classes = [
   "Barbarian", "Bard", "Cleric", "Druid", "Fighter", 
@@ -18,6 +19,7 @@ const gen5Classes = [
 interface FormData {
   realName: string;
   surnameInitial: string;
+  email: string;
   teachingClass: string;
   characterType: "self" | "dm";
   dndClass?: string;
@@ -39,7 +41,7 @@ export const CharacterForm = () => {
 
     try {
       // Validate required fields
-      if (!data.realName || !data.surnameInitial || !data.teachingClass || !data.characterType) {
+      if (!data.realName || !data.surnameInitial || !data.email || !data.teachingClass || !data.characterType) {
         toast({
           title: "Missing Information",
           description: "Please fill in all required fields.",
@@ -48,11 +50,65 @@ export const CharacterForm = () => {
         return;
       }
 
-      // Create mailto link with form data
-      const subject = encodeURIComponent("New D&D Character Registration");
+      // Prepare email template parameters
+      const templateParams = {
+        to_email: 'rickymascerezo@gmail.com',
+        from_name: data.realName,
+        from_email: data.email,
+        real_name: data.realName,
+        surname_initial: data.surnameInitial,
+        student_email: data.email,
+        teaching_class: data.teachingClass,
+        character_creation: data.characterType === "self" ? "Student will create their own character" : "DM will create character",
+        dnd_class: data.characterType === "dm" ? (data.dndClass || "Not specified") : "N/A",
+        character_behavior: data.characterType === "dm" ? (data.characterBehavior || "Not specified") : "N/A",
+        background_story: data.characterType === "dm" ? (data.backgroundStory || "Not specified") : "N/A",
+        message: `A new adventurer has registered!
+
+Real Name: ${data.realName}
+Email: ${data.email}
+Surname Initial: ${data.surnameInitial}
+Teaching Class: ${data.teachingClass}
+Character Creation: ${data.characterType === "self" ? "Student will create their own character" : "DM will create character"}
+
+${data.characterType === "dm" ? `
+D&D Class: ${data.dndClass || "Not specified"}
+Character Behavior: ${data.characterBehavior || "Not specified"}
+Background Story: ${data.backgroundStory || "Not specified"}
+` : ""}
+
+May their journey be filled with glory and treasure!`
+      };
+
+      // Send email using EmailJS
+      await emailjs.send(
+        'service_dnd_form', // You'll need to set this up in EmailJS
+        'template_dnd_registration', // You'll need to create this template
+        templateParams,
+        'YOUR_PUBLIC_KEY' // You'll need to get this from EmailJS
+      );
       
+      // Show thank you message
+      setShowThankYou(true);
+      
+      toast({
+        title: "Registration Sent!",
+        description: "Your character registration has been successfully sent!",
+      });
+      
+    } catch (error) {
+      console.error("Email error:", error);
+      toast({
+        title: "Registration Failed",
+        description: "There was an error sending your registration. Please try the mailto link as backup.",
+        variant: "destructive",
+      });
+      
+      // Fallback to mailto
+      const subject = encodeURIComponent("New D&D Character Registration");
       let emailBody = `A new adventurer has registered!\n\n`;
       emailBody += `Real Name: ${data.realName}\n`;
+      emailBody += `Email: ${data.email}\n`;
       emailBody += `Surname Initial: ${data.surnameInitial}\n`;
       emailBody += `Teaching Class: ${data.teachingClass}\n`;
       emailBody += `Character Creation: ${data.characterType === "self" ? "Student will create their own character" : "DM will create character"}\n`;
@@ -67,25 +123,7 @@ export const CharacterForm = () => {
       
       const body = encodeURIComponent(emailBody);
       const mailtoLink = `mailto:rickymascerezo@gmail.com?subject=${subject}&body=${body}`;
-      
-      // Open default email client
-      window.open(mailtoLink, '_self');
-      
-      // Show thank you message
-      setShowThankYou(true);
-      
-      toast({
-        title: "Registration Sent!",
-        description: "Your email client should open with the registration details.",
-      });
-      
-    } catch (error) {
-      console.error("Email error:", error);
-      toast({
-        title: "Registration Failed",
-        description: "There was an error processing your registration. Please try again.",
-        variant: "destructive",
-      });
+      window.open(mailtoLink, '_blank');
     } finally {
       setIsSubmitting(false);
     }
@@ -158,6 +196,27 @@ export const CharacterForm = () => {
               disabled={isSubmitting}
             />
             {errors.surnameInitial && <p className="text-destructive text-sm">{errors.surnameInitial.message}</p>}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-foreground font-semibold">
+              Email Address
+            </Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="your.email@example.com"
+              {...register("email", { 
+                required: "Email is required",
+                pattern: {
+                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                  message: "Invalid email address"
+                }
+              })}
+              className="medieval-shadow"
+              disabled={isSubmitting}
+            />
+            {errors.email && <p className="text-destructive text-sm">{errors.email.message}</p>}
           </div>
 
           <div className="space-y-2">
