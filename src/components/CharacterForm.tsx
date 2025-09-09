@@ -38,6 +38,16 @@ export const CharacterForm = () => {
     setIsSubmitting(true);
 
     try {
+      // Validate required fields
+      if (!data.realName || !data.surnameInitial || !data.teachingClass || !data.characterType) {
+        toast({
+          title: "Missing Information",
+          description: "Please fill in all required fields.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       // Create mailto link with form data
       const subject = encodeURIComponent("New D&D Character Registration");
       
@@ -45,12 +55,12 @@ export const CharacterForm = () => {
       emailBody += `Real Name: ${data.realName}\n`;
       emailBody += `Surname Initial: ${data.surnameInitial}\n`;
       emailBody += `Teaching Class: ${data.teachingClass}\n`;
-      emailBody += `Character Creation: ${data.characterType === "self" ? "Student will create" : "DM will create"}\n`;
+      emailBody += `Character Creation: ${data.characterType === "self" ? "Student will create their own character" : "DM will create character"}\n`;
       
       if (data.characterType === "dm") {
-        emailBody += `\nD&D Class: ${data.dndClass}\n`;
-        emailBody += `Character Behavior: ${data.characterBehavior}\n`;
-        emailBody += `Background Story: ${data.backgroundStory}\n`;
+        emailBody += `\nD&D Class: ${data.dndClass || "Not specified"}\n`;
+        emailBody += `Character Behavior: ${data.characterBehavior || "Not specified"}\n`;
+        emailBody += `Background Story: ${data.backgroundStory || "Not specified"}\n`;
       }
       
       emailBody += `\nMay their journey be filled with glory and treasure!`;
@@ -59,14 +69,21 @@ export const CharacterForm = () => {
       const mailtoLink = `mailto:rickymascerezo@gmail.com?subject=${subject}&body=${body}`;
       
       // Open default email client
-      window.location.href = mailtoLink;
+      window.open(mailtoLink, '_self');
       
+      // Show thank you message
       setShowThankYou(true);
       
+      toast({
+        title: "Registration Sent!",
+        description: "Your email client should open with the registration details.",
+      });
+      
     } catch (error) {
+      console.error("Email error:", error);
       toast({
         title: "Registration Failed",
-        description: "There was an error processing your registration.",
+        description: "There was an error processing your registration. Please try again.",
         variant: "destructive",
       });
     } finally {
