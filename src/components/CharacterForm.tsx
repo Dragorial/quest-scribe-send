@@ -82,10 +82,10 @@ May their journey be filled with glory and treasure!`
 
       // Send email using EmailJS
       await emailjs.send(
-        'service_dnd_form', // You'll need to set this up in EmailJS
-        'template_dnd_registration', // You'll need to create this template
+        'service_cs81t6a',
+        'template_pee9za9',
         templateParams,
-        'YOUR_PUBLIC_KEY' // You'll need to get this from EmailJS
+        'YOUR_PUBLIC_KEY' // Get this from EmailJS dashboard → Account → Public Key
       );
       
       // Show thank you message
