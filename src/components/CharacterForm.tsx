@@ -52,9 +52,11 @@ export const CharacterForm = () => {
 
       // Prepare email template parameters
       const templateParams = {
+        to_name: 'Ricky',
         to_email: 'rickymascerezo@gmail.com',
         from_name: data.realName,
         from_email: data.email,
+        reply_to: data.email,
         real_name: data.realName,
         surname_initial: data.surnameInitial,
         student_email: data.email,
@@ -239,7 +241,7 @@ May their journey be filled with glory and treasure!`
               Character Creation
             </Label>
             <RadioGroup 
-              value={characterType} 
+              value={characterType || ""} 
               onValueChange={(value) => setValue("characterType", value as "self" | "dm")}
               disabled={isSubmitting}
             >
