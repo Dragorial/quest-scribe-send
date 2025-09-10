@@ -85,7 +85,7 @@ May their journey be filled with glory and treasure!`
         'service_cs81t6a',
         'template_pee9za9',
         templateParams,
-        'YOUR_PUBLIC_KEY' // Get this from EmailJS dashboard → Account → Public Key
+        'wmlnv99MG02hRpsij'
       );
       
       // Show thank you message
